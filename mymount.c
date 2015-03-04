@@ -44,13 +44,16 @@ int mount(const char *source, const char *target,
     orig_mount = dlsym(RTLD_NEXT, "mount");
 
     if (!strcmp("fuse.glusterfs", filesystemtype)) {
+        openlog ("mount.so", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
         if (!open_target_fd(&targetfd, "/proc/1/ns/mnt")){
             if (setns(targetfd, CLONE_NEWNS)){
-                perror("setns");
+                syslog(LOG_NOTICE, "setns failed for filesystem: %s", filesystemtype);
+            }else {
+                syslog(LOG_NOTICE, "setns succeeded for filesystem: %s", filesystemtype);
             }
+        }else {
+            syslog(LOG_NOTICE, "failed to open ns for filesystem: %s", filesystemtype);
         }
-        openlog ("mount.so", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
-        syslog(LOG_NOTICE, "filesystem: %s", filesystemtype);
         closelog();
     }
 
@@ -58,26 +61,6 @@ int mount(const char *source, const char *target,
     if (orig_mount) {
         return orig_mount(source, target, filesystemtype, mountflags, data);
     }else {
-        return ENOENT;
+        return -ENOENT;
     }
 }
-
-#if FUSE_MOUNT
-struct fuse_chan* fuse_mount(const char *mountpoint,
-                             struct fuse_args *args)
-{
-    struct fuse_chan* (*orig_mount)(const char *, struct fuse_args *);
-    orig_mount = dlsym(RTLD_NEXT, "fuse_mount");
-	if (1) {
-		int targetfd = -1;
-		if (!open_target_fd(&targetfd, "/proc/1/ns/mnt")){
-            if (setns(targetfd, CLONE_NEWNS)){
-                perror("setns");
-            }
-        }
-	}
-    fprintf(stderr, "fuse mount\n");
-    return NULL;
-    return orig_mount(mountpoint, args);
-}
-#endif
