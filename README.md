@@ -1,7 +1,4 @@
----
-layout: post
-title: How to Mount Glusterfs on Docker Host?
----
+
 ## Background
 A Docker host (such as CoreOS and RedHat Atomic Host) usually is a minimal OS without Gluster client package. If you want to mount a Gluster filesystem, it is quite hard to do it on the host.
 
