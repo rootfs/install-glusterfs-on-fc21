@@ -29,7 +29,7 @@ Then run the image in [Super Privileged Container](http://developerblog.redhat.c
    
 Get the the container's PID:
 
-    # docker inspect --format {% raw %} {{.State.Pid}} {% endraw %} <your_container_id>
+    # docker inspect --format {{.State.Pid}} <your_container_id>
     
 My PID is *865*, I use this process's namespace to run the mount, note  the  */mnt* is in *host's* name space
 
